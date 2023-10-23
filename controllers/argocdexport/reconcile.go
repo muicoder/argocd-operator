@@ -15,7 +15,6 @@
 package argocdexport
 
 import (
-	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 
@@ -44,10 +43,10 @@ func setResourceWatches(bld *builder.Builder) *builder.Builder {
 	bld.For(&argoproj.ArgoCDExport{})
 
 	// Watch for changes to CronJob sub-resources owned by ArgoCDExport instances.
-	bld.Owns(&batchv1.CronJob{})
+	//bld.Owns(&batchv1.CronJob{})
 
 	// Watch for changes to Job sub-resources owned by ArgoCD instances.
-	bld.Owns(&batchv1.Job{})
+	//bld.Owns(&batchv1.Job{})
 
 	// Watch for changes to PersistentVolumeClaim sub-resources owned by ArgoCD instances.
 	bld.Owns(&corev1.PersistentVolumeClaim{})

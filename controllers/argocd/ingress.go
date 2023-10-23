@@ -91,6 +91,9 @@ func (r *ReconcileArgoCD) reconcileIngresses(cr *argoproj.ArgoCD) error {
 
 // reconcileArgoServerIngress will ensure that the ArgoCD Server Ingress is present.
 func (r *ReconcileArgoCD) reconcileArgoServerIngress(cr *argoproj.ArgoCD) error {
+	if !cr.Spec.Server.Ingress.Enabled {
+		return nil // Ingress not enabled, move along...
+	}
 	ingress := newIngressWithSuffix("server", cr)
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
 		if !cr.Spec.Server.Ingress.Enabled {
@@ -98,10 +101,6 @@ func (r *ReconcileArgoCD) reconcileArgoServerIngress(cr *argoproj.ArgoCD) error 
 			return r.Client.Delete(context.TODO(), ingress)
 		}
 		return nil // Ingress found and enabled, do nothing
-	}
-
-	if !cr.Spec.Server.Ingress.Enabled {
-		return nil // Ingress not enabled, move along...
 	}
 
 	// Add default annotations
@@ -167,6 +166,9 @@ func (r *ReconcileArgoCD) reconcileArgoServerIngress(cr *argoproj.ArgoCD) error 
 
 // reconcileArgoServerGRPCIngress will ensure that the ArgoCD Server GRPC Ingress is present.
 func (r *ReconcileArgoCD) reconcileArgoServerGRPCIngress(cr *argoproj.ArgoCD) error {
+	if !cr.Spec.Server.GRPC.Ingress.Enabled {
+		return nil // Ingress not enabled, move along...
+	}
 	ingress := newIngressWithSuffix("grpc", cr)
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
 		if !cr.Spec.Server.GRPC.Ingress.Enabled {
@@ -174,10 +176,6 @@ func (r *ReconcileArgoCD) reconcileArgoServerGRPCIngress(cr *argoproj.ArgoCD) er
 			return r.Client.Delete(context.TODO(), ingress)
 		}
 		return nil // Ingress found and enabled, do nothing
-	}
-
-	if !cr.Spec.Server.GRPC.Ingress.Enabled {
-		return nil // Ingress not enabled, move along...
 	}
 
 	// Add default annotations
@@ -242,6 +240,9 @@ func (r *ReconcileArgoCD) reconcileArgoServerGRPCIngress(cr *argoproj.ArgoCD) er
 
 // reconcileGrafanaIngress will ensure that the ArgoCD Server GRPC Ingress is present.
 func (r *ReconcileArgoCD) reconcileGrafanaIngress(cr *argoproj.ArgoCD) error {
+	if !cr.Spec.Grafana.Enabled || !cr.Spec.Grafana.Ingress.Enabled {
+		return nil // Grafana itself or Ingress not enabled, move along...
+	}
 	ingress := newIngressWithSuffix("grafana", cr)
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
 		if !cr.Spec.Grafana.Enabled || !cr.Spec.Grafana.Ingress.Enabled {
@@ -252,17 +253,14 @@ func (r *ReconcileArgoCD) reconcileGrafanaIngress(cr *argoproj.ArgoCD) error {
 		return nil // Ingress found and enabled, do nothing
 	}
 
-	if !cr.Spec.Grafana.Enabled || !cr.Spec.Grafana.Ingress.Enabled {
-		return nil // Grafana itself or Ingress not enabled, move along...
-	}
-
-	log.Info(grafanaDeprecatedWarning)
-
 	return nil
 }
 
 // reconcilePrometheusIngress will ensure that the Prometheus Ingress is present.
 func (r *ReconcileArgoCD) reconcilePrometheusIngress(cr *argoproj.ArgoCD) error {
+	if !cr.Spec.Prometheus.Enabled || !cr.Spec.Prometheus.Ingress.Enabled {
+		return nil // Prometheus itself or Ingress not enabled, move along...
+	}
 	ingress := newIngressWithSuffix("prometheus", cr)
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
 		if !cr.Spec.Prometheus.Enabled || !cr.Spec.Prometheus.Ingress.Enabled {
@@ -270,10 +268,6 @@ func (r *ReconcileArgoCD) reconcilePrometheusIngress(cr *argoproj.ArgoCD) error 
 			return r.Client.Delete(context.TODO(), ingress)
 		}
 		return nil // Ingress found and enabled, do nothing
-	}
-
-	if !cr.Spec.Prometheus.Enabled || !cr.Spec.Prometheus.Ingress.Enabled {
-		return nil // Prometheus itself or Ingress not enabled, move along...
 	}
 
 	// Add default annotations
@@ -337,17 +331,15 @@ func (r *ReconcileArgoCD) reconcilePrometheusIngress(cr *argoproj.ArgoCD) error 
 
 // reconcileApplicationSetControllerIngress will ensure that the ApplicationSetController Ingress is present.
 func (r *ReconcileArgoCD) reconcileApplicationSetControllerIngress(cr *argoproj.ArgoCD) error {
+	if cr.Spec.ApplicationSet == nil || !cr.Spec.ApplicationSet.WebhookServer.Ingress.Enabled {
+		return nil // Ingress not enabled, move along...
+	}
 	ingress := newIngressWithSuffix(common.ApplicationSetServiceNameSuffix, cr)
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
 		if cr.Spec.ApplicationSet == nil || !cr.Spec.ApplicationSet.WebhookServer.Ingress.Enabled {
 			return r.Client.Delete(context.TODO(), ingress)
 		}
 		return nil // Ingress found and enabled, do nothing
-	}
-
-	if cr.Spec.ApplicationSet == nil || !cr.Spec.ApplicationSet.WebhookServer.Ingress.Enabled {
-		log.Info("not enabled")
-		return nil // Ingress not enabled, move along...
 	}
 
 	// Add annotations

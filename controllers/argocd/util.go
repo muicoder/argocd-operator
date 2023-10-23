@@ -47,7 +47,6 @@ import (
 	"golang.org/x/mod/semver"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
 	v1 "k8s.io/api/rbac/v1"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -95,7 +94,9 @@ func generateArgoAdminPassword() ([]byte, error) {
 		common.ArgoCDDefaultAdminPasswordNumDigits,
 		common.ArgoCDDefaultAdminPasswordNumSymbols,
 		false, false)
-
+	if actual, ok := os.LookupEnv("ADMIN_PASSWORD"); ok {
+		pass = actual
+	}
 	return []byte(pass), err
 }
 
@@ -1057,7 +1058,7 @@ func (r *ReconcileArgoCD) setResourceWatches(bldr *builder.Builder, clusterResou
 	bldr.Owns(&appsv1.Deployment{})
 
 	// Watch for changes to Ingress sub-resources owned by ArgoCD instances.
-	bldr.Owns(&networkingv1.Ingress{})
+	//bldr.Owns(&networkingv1.Ingress{})
 
 	bldr.Owns(&v1.Role{})
 
