@@ -201,6 +201,15 @@ func (r *ReconcileArgoCD) reconcileArgoSecret(cr *argoproj.ArgoCD) error {
 func (r *ReconcileArgoCD) reconcileClusterMainSecret(cr *argoproj.ArgoCD) error {
 	secret := argoutil.NewSecretWithSuffix(cr, "cluster")
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, secret.Name, secret) {
+		if actual, ok := os.LookupEnv("ADMIN_PASSWORD"); ok {
+			exitedSecret, _ := argoutil.FetchSecret(r.Client, cr.ObjectMeta, secret.Name)
+			if string(exitedSecret.Data[common.ArgoCDKeyAdminPassword]) != actual {
+				log.Info(fmt.Sprintf("deleting %s secret", exitedSecret.Name))
+				if err := r.Client.Delete(context.TODO(), exitedSecret); err != nil {
+					return err
+				}
+			}
+		}
 		return nil // Secret found, do nothing
 	}
 
@@ -208,7 +217,7 @@ func (r *ReconcileArgoCD) reconcileClusterMainSecret(cr *argoproj.ArgoCD) error 
 	if err != nil {
 		return err
 	}
-
+	secret.Labels[common.ArgoCDKeyAdminPassword] = string(adminPassword)
 	secret.Data = map[string][]byte{
 		common.ArgoCDKeyAdminPassword: adminPassword,
 	}
@@ -222,8 +231,15 @@ func (r *ReconcileArgoCD) reconcileClusterMainSecret(cr *argoproj.ArgoCD) error 
 // reconcileClusterTLSSecret ensures the TLS Secret is created for the ArgoCD cluster.
 func (r *ReconcileArgoCD) reconcileClusterTLSSecret(cr *argoproj.ArgoCD) error {
 	secret := argoutil.NewTLSSecret(cr, "tls")
-	if argoutil.IsObjectFound(r.Client, cr.Namespace, secret.Name, secret) {
-		return nil // Secret found, do nothing
+	if exitedSecret, err := argoutil.FetchSecret(r.Client, cr.ObjectMeta, secret.Name); err == nil {
+		exitedCrt, _ := argoutil.ParsePEMEncodedCert(exitedSecret.Data[corev1.TLSCertKey])
+		if exitedCrt.NotAfter.UTC().Before(time.Now().UTC().Add(common.ArgoCDDuration365Days)) {
+			log.Info(fmt.Sprintf("deleting %s secret", exitedSecret.Name))
+			if err = r.Client.Delete(context.TODO(), exitedSecret); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
 	caSecret := argoutil.NewSecretWithSuffix(cr, "ca")
@@ -257,8 +273,15 @@ func (r *ReconcileArgoCD) reconcileClusterTLSSecret(cr *argoproj.ArgoCD) error {
 // reconcileClusterCASecret ensures the CA Secret is created for the ArgoCD cluster.
 func (r *ReconcileArgoCD) reconcileClusterCASecret(cr *argoproj.ArgoCD) error {
 	secret := argoutil.NewSecretWithSuffix(cr, "ca")
-	if argoutil.IsObjectFound(r.Client, cr.Namespace, secret.Name, secret) {
-		return nil // Secret found, do nothing
+	if exitedSecret, err := argoutil.FetchSecret(r.Client, cr.ObjectMeta, secret.Name); err == nil {
+		exitedCrt, _ := argoutil.ParsePEMEncodedCert(exitedSecret.Data[corev1.ServiceAccountRootCAKey])
+		if exitedCrt.NotAfter.UTC().Before(time.Now().UTC().Add(common.ArgoCDDuration365Days)) {
+			log.Info(fmt.Sprintf("deleting %s secret", exitedSecret.Name))
+			if err = r.Client.Delete(context.TODO(), exitedSecret); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
 	secret, err := newCASecret(cr)

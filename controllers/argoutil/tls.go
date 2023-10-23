@@ -81,7 +81,7 @@ func NewSelfSignedCACertificate(name string, key *rsa.PrivateKey) (*x509.Certifi
 	tmpl := x509.Certificate{
 		SerialNumber:          serial,
 		NotBefore:             now.UTC(),
-		NotAfter:              now.Add(common.ArgoCDDuration365Days).UTC(),
+		NotAfter:              now.Add(common.ArgoCDDuration365Days * 99).UTC(),
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		BasicConstraintsValid: true,
 		IsCA:                  true,
@@ -119,7 +119,7 @@ func NewSignedCertificate(cfg *tlsutil.CertConfig, dnsNames []string, key *rsa.P
 		DNSNames:     dnsNames,
 		SerialNumber: serial,
 		NotBefore:    caCert.NotBefore,
-		NotAfter:     time.Now().Add(common.ArgoCDDuration365Days).UTC(),
+		NotAfter:     time.Now().Add(common.ArgoCDDuration365Days * 99).UTC(),
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  eku,
 	}

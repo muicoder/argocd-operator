@@ -3,12 +3,11 @@ name: Go
 on:
   push:
     branches:
-      - 'master'
-      - 'release-*'
+      - 'masters'
       - 'rhos-*'
   pull_request:
     branches:
-      - 'master'
+      - 'masters'
       - 'release-*'
       - 'rhos-*'
 

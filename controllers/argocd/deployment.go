@@ -268,7 +268,7 @@ func getArgoRepoCommand(cr *argoproj.ArgoCD, useTLSForRedis bool) []string {
 func getArgoCmpServerInitCommand() []string {
 	cmd := make([]string, 0)
 	cmd = append(cmd, "cp")
-	cmd = append(cmd, "-n")
+	cmd = append(cmd, "-auv")
 	cmd = append(cmd, "/usr/local/bin/argocd")
 	cmd = append(cmd, "/var/run/argocd/argocd-cmp-server")
 	return cmd
@@ -785,6 +785,8 @@ func (r *ReconcileArgoCD) reconcileRepoDeployment(cr *argoproj.ArgoCD, useTLSFor
 
 	if cr.Spec.Repo.ServiceAccount != "" {
 		deploy.Spec.Template.Spec.ServiceAccountName = cr.Spec.Repo.ServiceAccount
+	} else {
+		deploy.Spec.Template.Spec.ServiceAccountName = "argocd-operator-controller-manager"
 	}
 
 	// Global proxy env vars go first
