@@ -312,6 +312,17 @@ func policyRuleForServerClusterRole() []v1.PolicyRule {
 				"update",
 			},
 		},
+		{
+			APIGroups: []string{
+				"",
+			},
+			Resources: []string{
+				"pods/exec",
+			},
+			Verbs: []string{
+				"create",
+			},
+		},
 	}
 }
 

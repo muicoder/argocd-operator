@@ -2,10 +2,10 @@ name: Generated code
 on:
   push:
     branches:
-    - 'master'
+    - 'masters'
   pull_request:
     branches:
-      - 'master'
+      - 'masters'
 env:
   # Golang version to use
   GOLANG_VERSION: '1.20'

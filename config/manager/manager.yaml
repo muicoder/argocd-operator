@@ -51,9 +51,19 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 10
         env:
+        - name: ADMIN_PASSWORD
+          value: admin
+        - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
+          value: '*'
+        - name: DISABLE_DEX
+          value: "true"
+        - name: ENABLE_CONVERSION_WEBHOOK
+          value: "false"
         - name: WATCH_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.annotations['olm.targetNamespaces']
+      nodeSelector:
+        operator: ""
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10

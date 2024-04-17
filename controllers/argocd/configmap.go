@@ -386,6 +386,7 @@ func (r *ReconcileArgoCD) reconcileArgoConfigMap(cr *argoproj.ArgoCD) error {
 	cm.Data[common.ArgoCDKeyHelpChatURL] = getHelpChatURL(cr)
 	cm.Data[common.ArgoCDKeyHelpChatText] = getHelpChatText(cr)
 	cm.Data[common.ArgoCDKeyKustomizeBuildOptions] = getKustomizeBuildOptions(cr)
+	cm.Data["exec.enabled"] = "true"
 
 	if len(cr.Spec.KustomizeVersions) > 0 {
 		for _, kv := range cr.Spec.KustomizeVersions {
