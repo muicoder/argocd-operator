@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-notifications-secret
+  namespace: argocd
+stringData:
+  token: "a-b-c-d-e"
+type: Opaque
+---
+apiVersion: v1
+data:
+  service.webhook.wecom: |
+    url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=$token
+    headers:
+    - name: Content-Type
+      value: application/json
+  subscriptions: |
+    - recipients:
+      - wecom
+      triggers:
+      - on-health-degraded
+  template.app-created: &default |
+    webhook:
+      wecom:
+        method: POST
+        body: |
+          {"msgtype": "markdown","markdown": {"content": "
+          <font color=\"info\">{{.app.spec.source.repoURL}}</font>
+          <font color=\"comment\">{{.app.spec.source.path}}</font>
+          {{- if .app.status.reconciledAt}}
+          {{.app.status.reconciledAt}}ℹ️{{.app.status.sourceType}}
+          >{{range $i,$res := .app.status.resources}}
+          {{- range $k,$v := $res}}{{if eq $k "health"}}{{if ne $v.status "Healthy"}}{{add 1 $i}}\t{{$res.kind}}/{{$res.name}}\t{{$v.status}}\n{{end}}{{end}}{{end}}
+          {{- end}}
+          {{- if .app.status.sync.revision}}
+          *<font color=\"warning\">{{.app.status.sync.status}}</font>\thealth:{{.app.status.health.status}}*
+          >{{range $i,$v := .app.status.summary.images}}{{add 1 $i}}\t{{$v}}\n{{end}}
+          {{- end}}
+          {{- else}}
+          <font color=\"warning\">{{.app.metadata.name}}</font>
+          {{- end}}
+          "
+          }}
+  template.app-health-degraded: *default
+  trigger.on-created: |-
+    - description: Application is created.
+      oncePer: app.metadata.name
+      send:
+      - app-created
+      when: "true"
+  trigger.on-health-degraded: |-
+    - description: Application has unHealthy
+      send:
+      - app-health-degraded
+      when: app.status.health.status != 'Healthy'
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd

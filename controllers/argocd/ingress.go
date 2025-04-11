@@ -17,8 +17,6 @@ package argocd
 import (
 	"context"
 	"fmt"
-	"reflect"
-
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -92,17 +90,12 @@ func (r *ReconcileArgoCD) reconcileIngresses(cr *argoproj.ArgoCD) error {
 
 // reconcileArgoServerIngress will ensure that the ArgoCD Server Ingress is present.
 func (r *ReconcileArgoCD) reconcileArgoServerIngress(cr *argoproj.ArgoCD) error {
-	ingress := newIngressWithSuffix("server", cr)
-	existingIngress := newIngressWithSuffix("server", cr)
-	objectFound := argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, existingIngress)
-
 	if !cr.Spec.Server.Ingress.Enabled {
-		if objectFound {
-			// Ingress exists but enabled flag has been set to false, delete the Ingress
-			argoutil.LogResourceDeletion(log, ingress, "server ingress is disabled")
-			return r.Client.Delete(context.TODO(), ingress)
-		}
-		return nil // Ingress not enabled, move along...
+		return nil
+	}
+	ingress := newIngressWithSuffix("server", cr)
+	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
+		return nil
 	}
 
 	// Add default annotations
@@ -159,45 +152,6 @@ func (r *ReconcileArgoCD) reconcileArgoServerIngress(cr *argoproj.ArgoCD) error 
 	if len(cr.Spec.Server.Ingress.TLS) > 0 {
 		ingress.Spec.TLS = cr.Spec.Server.Ingress.TLS
 	}
-	if objectFound {
-		changed := false
-		explanation := ""
-		// If Ingress found and enabled, make sure the ingressClassName is up-to-date
-		if existingIngress.Spec.IngressClassName != cr.Spec.Server.Ingress.IngressClassName {
-			existingIngress.Spec.IngressClassName = cr.Spec.Server.Ingress.IngressClassName
-			explanation = "ingress class name"
-			changed = true
-		}
-		if !reflect.DeepEqual(cr.Spec.Server.Ingress.Annotations, existingIngress.ObjectMeta.Annotations) {
-			existingIngress.ObjectMeta.Annotations = cr.Spec.Server.Ingress.Annotations
-			if changed {
-				explanation += ", "
-			}
-			explanation += "annotations"
-			changed = true
-		}
-		if !reflect.DeepEqual(ingress.Spec.Rules, existingIngress.Spec.Rules) {
-			existingIngress.Spec.Rules = ingress.Spec.Rules
-			if changed {
-				explanation += ", "
-			}
-			explanation += "ingress rules"
-			changed = true
-		}
-		if !reflect.DeepEqual(ingress.Spec.TLS, existingIngress.Spec.TLS) {
-			existingIngress.Spec.TLS = ingress.Spec.TLS
-			if changed {
-				explanation += ", "
-			}
-			explanation += "ingress tls"
-			changed = true
-		}
-		if changed {
-			argoutil.LogResourceUpdate(log, existingIngress, "updating", explanation)
-			return r.Client.Update(context.TODO(), existingIngress)
-		}
-		return nil // Ingress with no changes to apply, do nothing
-	}
 	if err := controllerutil.SetControllerReference(cr, ingress, r.Scheme); err != nil {
 		return err
 	}
@@ -207,18 +161,12 @@ func (r *ReconcileArgoCD) reconcileArgoServerIngress(cr *argoproj.ArgoCD) error 
 
 // reconcileArgoServerGRPCIngress will ensure that the ArgoCD Server GRPC Ingress is present.
 func (r *ReconcileArgoCD) reconcileArgoServerGRPCIngress(cr *argoproj.ArgoCD) error {
+	if !cr.Spec.Server.GRPC.Ingress.Enabled {
+		return nil
+	}
 	ingress := newIngressWithSuffix("grpc", cr)
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
-		if !cr.Spec.Server.GRPC.Ingress.Enabled {
-			// Ingress exists but enabled flag has been set to false, delete the Ingress
-			argoutil.LogResourceDeletion(log, ingress, "server grpc ingress is disabled")
-			return r.Client.Delete(context.TODO(), ingress)
-		}
-		return nil // Ingress found and enabled, do nothing
-	}
-
-	if !cr.Spec.Server.GRPC.Ingress.Enabled {
-		return nil // Ingress not enabled, move along...
+		return nil
 	}
 
 	// Add default annotations
@@ -284,27 +232,9 @@ func (r *ReconcileArgoCD) reconcileArgoServerGRPCIngress(cr *argoproj.ArgoCD) er
 
 // reconcileGrafanaIngress will ensure that the ArgoCD Server GRPC Ingress is present.
 func (r *ReconcileArgoCD) reconcileGrafanaIngress(cr *argoproj.ArgoCD) error {
-	ingress := newIngressWithSuffix("grafana", cr)
-	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
-		//nolint:staticcheck
-		if !cr.Spec.Grafana.Enabled || !cr.Spec.Grafana.Ingress.Enabled {
-			// Ingress exists but enabled flag has been set to false, delete the Ingress
-			var explanation string
-			if !cr.Spec.Grafana.Enabled {
-				explanation = "grafana is disabled"
-			} else {
-				explanation = "grafana ingress is disabled"
-			}
-			argoutil.LogResourceDeletion(log, ingress, explanation)
-			return r.Client.Delete(context.TODO(), ingress)
-		}
-		log.Info(grafanaDeprecatedWarning)
-		return nil // Ingress found and enabled, do nothing
-	}
-
 	//nolint:staticcheck
 	if !cr.Spec.Grafana.Enabled || !cr.Spec.Grafana.Ingress.Enabled {
-		return nil // Grafana itself or Ingress not enabled, move along...
+		return nil
 	}
 
 	log.Info(grafanaDeprecatedWarning)
@@ -314,24 +244,12 @@ func (r *ReconcileArgoCD) reconcileGrafanaIngress(cr *argoproj.ArgoCD) error {
 
 // reconcilePrometheusIngress will ensure that the Prometheus Ingress is present.
 func (r *ReconcileArgoCD) reconcilePrometheusIngress(cr *argoproj.ArgoCD) error {
+	if !cr.Spec.Prometheus.Enabled || !cr.Spec.Prometheus.Ingress.Enabled {
+		return nil
+	}
 	ingress := newIngressWithSuffix("prometheus", cr)
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
-		if !cr.Spec.Prometheus.Enabled || !cr.Spec.Prometheus.Ingress.Enabled {
-			// Ingress exists but enabled flag has been set to false, delete the Ingress
-			var explanation string
-			if !cr.Spec.Prometheus.Enabled {
-				explanation = "prometheus is disabled"
-			} else {
-				explanation = "prometheus ingress is disabled"
-			}
-			argoutil.LogResourceDeletion(log, ingress, explanation)
-			return r.Client.Delete(context.TODO(), ingress)
-		}
-		return nil // Ingress found and enabled, do nothing
-	}
-
-	if !cr.Spec.Prometheus.Enabled || !cr.Spec.Prometheus.Ingress.Enabled {
-		return nil // Prometheus itself or Ingress not enabled, move along...
+		return nil
 	}
 
 	// Add default annotations
@@ -396,24 +314,12 @@ func (r *ReconcileArgoCD) reconcilePrometheusIngress(cr *argoproj.ArgoCD) error 
 
 // reconcileApplicationSetControllerIngress will ensure that the ApplicationSetController Ingress is present.
 func (r *ReconcileArgoCD) reconcileApplicationSetControllerIngress(cr *argoproj.ArgoCD) error {
+	if cr.Spec.ApplicationSet == nil || !cr.Spec.ApplicationSet.WebhookServer.Ingress.Enabled {
+		return nil
+	}
 	ingress := newIngressWithSuffix(common.ApplicationSetServiceNameSuffix, cr)
 	if argoutil.IsObjectFound(r.Client, cr.Namespace, ingress.Name, ingress) {
-		if cr.Spec.ApplicationSet == nil || !cr.Spec.ApplicationSet.WebhookServer.Ingress.Enabled {
-			var explanation string
-			if cr.Spec.ApplicationSet == nil {
-				explanation = "applicationset is disabled"
-			} else {
-				explanation = "applicationset webhook ingress is disabled"
-			}
-			argoutil.LogResourceDeletion(log, ingress, explanation)
-			return r.Client.Delete(context.TODO(), ingress)
-		}
-		return nil // Ingress found and enabled, do nothing
-	}
-
-	if cr.Spec.ApplicationSet == nil || !cr.Spec.ApplicationSet.WebhookServer.Ingress.Enabled {
-		log.Info("applicationset or applicationset webhook ingress disabled")
-		return nil // Ingress not enabled, move along...
+		return nil
 	}
 
 	// Add annotations

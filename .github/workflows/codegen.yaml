@@ -2,12 +2,12 @@ name: Generated code
 on:
   push:
     branches:
-    - 'master'
+    - 'masterNot'
   pull_request:
     paths-ignore:
       - "docs/**"
     branches:
-      - 'master'
+      - 'masterNot'
 
 jobs:
   check-go-modules:

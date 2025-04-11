@@ -2,14 +2,13 @@ name: Build and test the operator
 on:
   push:
     branches:
-      - 'master'
-      - 'release-*'
+      - 'masterNot'
       - 'rhos-*'
   pull_request:
     paths-ignore:
       - "docs/**"
     branches:
-      - 'master'
+      - 'masterNot'
       - 'release-*'
       - 'rhos-*'
 

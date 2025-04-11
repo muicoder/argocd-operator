@@ -70,7 +70,7 @@ const (
 	ArgoCDDefaultArgoImage = "quay.io/argoproj/argocd"
 
 	// ArgoCDDefaultArgoVersion is the Argo CD container image digest to use when version not specified.
-	ArgoCDDefaultArgoVersion = "sha256:3be6babe6a3248cf35f2c7816c0fcbbbdba592320d93494016ef7123031339cb" // v2.14.15
+	ArgoCDDefaultArgoVersion = "v2.14.21"
 
 	// ArgoCDDefaultBackupKeyLength is the length of the generated default backup key.
 	ArgoCDDefaultBackupKeyLength = 32
@@ -122,13 +122,13 @@ const (
 	ArgoCDDefaultDexServiceAccountName = "argocd-dex-server"
 
 	// ArgoCDDefaultDexVersion is the Dex container image tag to use when not specified.
-	ArgoCDDefaultDexVersion = "sha256:d5f887574312f606c61e7e188cfb11ddb33ff3bf4bd9f06e6b1458efca75f604" // v2.30.3
+	ArgoCDDefaultDexVersion = "v2.39.1"
 
 	// ArgoCDDefaultExportJobImage is the export job container image to use when not specified.
 	ArgoCDDefaultExportJobImage = "quay.io/argoprojlabs/argocd-operator-util"
 
 	// ArgoCDDefaultExportJobVersion is the export job container image tag to use when not specified.
-	ArgoCDDefaultExportJobVersion = "sha256:0745934cb55d95c266daa5423ece9c149bb67db99eb2b3d9215597903724c636" // 0.13.0
+	ArgoCDDefaultExportJobVersion = "v0.14.1"
 
 	// ArgoCDDefaultExportLocalCapicity is the default capacity to use for local export.
 	ArgoCDDefaultExportLocalCapicity = "2Gi"
@@ -159,7 +159,7 @@ const (
 
 	// ArgoCDKeycloakVersion is the default Keycloak version used for the non-openshift platform when not specified.
 	// Version: 15.0.2
-	ArgoCDKeycloakVersion = "sha256:64fb81886fde61dee55091e6033481fa5ccdac62ae30a4fd29b54eb5e97df6a9"
+	ArgoCDKeycloakVersion = "26.4"
 
 	// ArgoCDKeycloakImageForOpenShift is the default Keycloak Image used for the OpenShift platform when not specified.
 	ArgoCDKeycloakImageForOpenShift = "registry.redhat.io/rh-sso-7/sso76-openshift-rhel8"
@@ -193,7 +193,7 @@ const (
 	ArgoCDDefaultRedisHAProxyImage = "haproxy"
 
 	// ArgoCDDefaultRedisHAProxyVersion is the default Redis HAProxy image tag to use when not specified.
-	ArgoCDDefaultRedisHAProxyVersion = "sha256:7392fbbbb53e9e063ca94891da6656e6062f9d021c0e514888a91535b9f73231" // 2.0.25-alpine
+	ArgoCDDefaultRedisHAProxyVersion = "2.0-alpine" // 2.0.35-alpine3.16
 
 	// ArgoCDDefaultRedisImage is the Redis container image to use when not specified.
 	ArgoCDDefaultRedisImage = "redis"
@@ -208,10 +208,10 @@ const (
 	ArgoCDDefaultRedisSuffix = "redis"
 
 	// ArgoCDDefaultRedisVersion is the Redis container image tag to use when not specified.
-	ArgoCDDefaultRedisVersion = "sha256:8061ca607db2a0c80010aeb5fc9bed0253448bc68711eaa14253a392f6c48280" // 6.2.4-alpine
+	ArgoCDDefaultRedisVersion = "6.2-alpine" // 6.2.16-alpine3.20
 
 	// ArgoCDDefaultRedisVersionHA is the Redis container image tag to use when not specified in HA mode.
-	ArgoCDDefaultRedisVersionHA = "sha256:8061ca607db2a0c80010aeb5fc9bed0253448bc68711eaa14253a392f6c48280" // 6.2.4-alpine
+	ArgoCDDefaultRedisVersionHA = "6.2-alpine" // 6.2.16-alpine3.20
 
 	// ArgoCDDefaultRepoMetricsPort is the default listen port for the Argo CD repo server metrics.
 	ArgoCDDefaultRepoMetricsPort = 8084
@@ -232,10 +232,10 @@ const (
 	ArgoCDDefaultResourceInclusions = ""
 
 	// ArgoCDExtensionInstallerImage is the default image for ArgoCD Extension Installer that can be used to install UI extensions like Rollouts extension.
-	ArgoCDExtensionInstallerImage = "quay.io/argoprojlabs/argocd-extension-installer:v0.0.8"
+	ArgoCDExtensionInstallerImage = "quay.io/argoprojlabs/argocd-extension-installer:v0.0.9"
 
 	// ArgoRolloutsExtensionURL is the URL used to download the extension.js file from the latest rollout-extension tar release
-	ArgoRolloutsExtensionURL = "https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.6/extension.tar"
+	ArgoRolloutsExtensionURL = "https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.7/extension.tar"
 
 	// ArgoCDDefaultRSAKeySize is the default RSA key size when not specified.
 	ArgoCDDefaultRSAKeySize = 2048

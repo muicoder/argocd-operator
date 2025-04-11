@@ -3,14 +3,13 @@ name: Go
 on:
   push:
     branches:
-      - 'master'
-      - 'release-*'
+      - 'masterNot'
       - 'rhos-*'
   pull_request:
     paths-ignore:
       - "docs/**"
     branches:
-      - 'master'
+      - 'masterNot'
       - 'release-*'
       - 'rhos-*'
 

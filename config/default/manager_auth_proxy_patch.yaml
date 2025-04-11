@@ -38,6 +38,6 @@ spec:
             - ALL
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true 
-          runAsNonRoot: true
+          runAsNonRoot: false
           seccompProfile:
             type: RuntimeDefault

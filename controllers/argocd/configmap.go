@@ -393,6 +393,7 @@ func (r *ReconcileArgoCD) reconcileArgoConfigMap(cr *argoproj.ArgoCD) error {
 	cm.Data[common.ArgoCDKeyHelpChatURL] = getHelpChatURL(cr)
 	cm.Data[common.ArgoCDKeyHelpChatText] = getHelpChatText(cr)
 	cm.Data[common.ArgoCDKeyKustomizeBuildOptions] = getKustomizeBuildOptions(cr)
+	cm.Data["exec.enabled"] = "true"
 
 	// Set installationID as a top-level key
 	if cr.Spec.InstallationID != "" {
